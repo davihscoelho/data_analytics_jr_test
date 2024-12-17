@@ -4,7 +4,7 @@ import sqlite3
 from sqlalchemy import create_engine, inspect, MetaData, Table, Column, String, Integer, Float, Date, text
 import re
 
-engine = create_engine("sqlite:///test_analytics.db", echo=True)
+engine = create_engine("sqlite:///../test_analytics.db", echo=True)
 metadata = MetaData()
 metadata.reflect(bind=engine)
 
