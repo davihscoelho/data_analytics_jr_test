@@ -20,53 +20,57 @@ folder_escolas  = "../Data/Data/Escolas"
 folder_estudantes = "../Data/Data/Perfil dos educandos"
 arquivos_escolas_csv = [arquivo for arquivo in os.listdir(folder_escolas) if arquivo.endswith('.csv')]
 arquivos_estudantes_csv = [arquivo for arquivo in os.listdir(folder_estudantes) if arquivo.endswith(".csv")]
-date_columns1 = ['dt_criacao', 'doc_criacao', 'dom_criacao', 'dt_ini_conv', 'dt_ini_func', 'dt_autoriza', 'dt_extintao', 'database']
+date_columns1 = ['dt_criacao', 'doc_criacao', 'dom_criacao', 'dt_ini_conv', 'dt_ini_func', 'dt_autoriza', 'dt_extincao', 'database']
 date_columns2 = ['database']
-file_path = "../Data/Data/Escolas/dicionarioescolas.xlsx"
 
-# Dicionario de Dados Escola
-df = pd.read_excel(file_path)
-padrao_cols = df["CAMPO"].to_list()
-padrao_cols = [x.lower() for x in padrao_cols]
-set1 = set(padrao_cols)
 
 # Auxiliar Dados Escola
-lista_arquivos_padrao1 = ["escolas-dez-2010.csv", "escolas-dez-2011.csv", "escolas-dez-2012.csv",
-                          "escolas-dez-2013.csv", "escolas-dez-2014.csv", "escolas-dez-2015.csv"]
 
-rename_padrao1 = {
-      "cd_cie":"codcie",
-      "nomes": "nomesc",
-      "nomescofi": "nomescof"
-      }
-
-rename_padrao2 = {
-      "cd_cie":"codcie",
-      "doc_criacao": "dom_criacao",
-      "dt_extintao": "dt_extincao",
-      "ï»¿dre": "dre",
-      "nomes": "nomesc",
-      "nomescofi": "nomescof",
-      "cdist": "coddist",
-      "fx_etaria.1": "fx_etaria"
-}
 
 def _converter_data(cols, df):
 	for coluna in df.columns:
 		if coluna in cols:
 			df[coluna] = pd.to_datetime(df[coluna], format="%d/%m/%Y", errors='coerce')
+		return df
 
 def _padronizar_cols_escolas(df, arquivo):
-
+	
 	new_df = df.copy()
 	cols_df = new_df.columns
 	cols_df = [x.lower() for x in cols_df]
 	new_df.columns = cols_df
+	
+	file_path = "../Data/Data/Escolas/dicionarioescolas.xlsx"
+
+	# Dicionario de Dados Escola
+	df = pd.read_excel(file_path)
+	padrao_cols = df["CAMPO"].to_list()
+	padrao_cols = [x.lower() for x in padrao_cols]
+
+	lista_arquivos_padrao1 = ["escolas-dez-2010.csv", "escolas-dez-2011.csv", "escolas-dez-2012.csv",
+							  "escolas-dez-2013.csv", "escolas-dez-2014.csv", "escolas-dez-2015.csv"]
+
+	rename_padrao1 = {
+		"cd_cie":"codcie",
+		"nomes": "nomesc",
+		"nomescofi": "nomescof"
+		}
+
+	rename_padrao2 = {
+		"cd_cie":"codcie",
+		"doc_criacao": "dom_criacao",
+		"dt_extintao": "dt_extincao",
+		"ï»¿dre": "dre",
+		"nomes": "nomesc",
+		"nomescofi": "nomescof",
+		"cdist": "coddist",
+		"fx_etaria.1": "fx_etaria"
+	}
+
+
 
 	if arquivo in lista_arquivos_padrao1:
-		print(new_df.columns)
 		new_df = new_df.rename(columns=rename_padrao1)
-		print(new_df.columns)
 		new_df["dt_ini_func"] = None
 
 	if arquivo in ["escolas122018.csv", "escolas122019.csv"]:
@@ -94,6 +98,33 @@ def _padronizar_cols_escolas(df, arquivo):
 
 	return new_df
 
+def padronizar_cols_estudantes(df, arquivo):
+	
+	new_df = df.copy()
+	cols_df = new_df.columns
+	cols_df = [x.lower() for x in cols_df]
+	new_df.columns = cols_df
+
+	file_path = "../Data/Data/Perfil dos educandos/dicionariopefileducando.xlsx"
+	df = pd.read_excel(file_path)
+	padrao_cols = df["CAMPO "].to_list()
+	padrao_cols = [x.lower() for x in padrao_cols]
+
+	rename_padrao = {
+      "setedu":"setor",
+      "codes": "codesc",
+      "qtd": "qtde",
+      "ï»¿dre": "dre"
+      }
+	
+	new_df = new_df.rename(columns = rename_padrao)
+  
+	if arquivo == "idadeserieneeracadez23.csv":
+		new_df["raca"] = None
+	#cols_df = new_df.columns 
+	new_df = new_df[padrao_cols]
+	return new_df
+
 def _detect_column_types(df):
     """Detectar os tipos de dados das colunas de um DataFrame."""
     tipos_de_dados = {}
@@ -108,7 +139,12 @@ def _detect_column_types(df):
             tipos_de_dados[coluna] = String
     return tipos_de_dados
 
-def carregar_dados_banco(arquivos_csv, folder_path, date_columns, dataset='escola'):
+def remover_colunas_duplicadas(df):
+    """Remove colunas duplicadas de um DataFrame."""
+    colunas_unicas = ~df.columns.duplicated(keep='first')
+    return df.loc[:, colunas_unicas]
+
+def carregar_dados_banco(arquivos_csv, folder_path, date_columns, dataset):
 
 	i = 0
 	for arquivo in arquivos_csv:
@@ -116,24 +152,48 @@ def carregar_dados_banco(arquivos_csv, folder_path, date_columns, dataset='escol
 		print(f"Iteração {i}")
 		nome_tabela = os.path.splitext(arquivo)[0]
 
-		if not inspect(engine).has_table(nome_tabela):
-			df = pd.read_csv(os.path.join(folder_path, arquivo), encoding='latin1', sep=';')
+		#if not inspect(engine).has_table(nome_tabela):
+		df = pd.read_csv(os.path.join(folder_path, arquivo), encoding='latin1', sep=';')
 
 		if dataset == 'escola':
-			_padronizar_cols_escolas(df, arquivo)
-			_converter_data(date_columns1, df)
+			df = _padronizar_cols_escolas(df, arquivo)
+			df = _converter_data(date_columns, df)
+			df = remover_colunas_duplicadas(df)  # Remover colunas duplicadas
 			tipos_de_dados = _detect_column_types(df)
+			
 
 			tabela = Table(nome_tabela, 
 						metadata, 
-						*[Column(coluna, tipo_dado) for coluna, tipo_dado in tipos_de_dados.items()]
+						*[Column(coluna, tipo_dado) for coluna, tipo_dado in tipos_de_dados.items()],
+						extend_existing=True
 						)							
-			tabela.create(bind=engine)
+			#tabela.create(bind=engine)
 			df.to_sql(nome_tabela, engine, if_exists='replace', index=False)
 				
 			i+=1
-			metadata.create_all(engine)
+			#metadata.create_all(engine)
+		
+		if dataset == 'estudante':
+
+			df = padronizar_cols_estudantes(df, arquivo)
+			df = _converter_data(date_columns2, df)
+			df = remover_colunas_duplicadas(df)  # Remover colunas duplicadas
+			tipos_de_dados = _detect_column_types(df)
+			
+			tabela = Table(nome_tabela, 
+						metadata, 
+						*[Column(coluna, tipo_dado) for coluna, tipo_dado in tipos_de_dados.items()],
+						extend_existing=True
+						)							
+			#tabela.create(bind=engine)
+			df.to_sql(nome_tabela, engine, if_exists='replace', index=False)
+				
+			i+=1
+			#metadata.create_all(engine)
+			print(f"Dados da pasta {folder_path} carregados com sucesso")
+
 
 if __name__ == '__main__':
-	carregar_dados_banco(arquivos_escolas_csv, folder_escolas, date_columns1)
-#	carregar_dados_banco(arquivos_estudantes_csv, folder_estudantes, date_columns2)
+	carregar_dados_banco(arquivos_escolas_csv, folder_escolas, date_columns1,dataset='escola')
+	carregar_dados_banco(arquivos_estudantes_csv, folder_estudantes, date_columns2,dataset='estudante')
+
