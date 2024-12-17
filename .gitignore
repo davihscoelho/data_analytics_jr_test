@@ -154,6 +154,7 @@ cython_debug/
 Data
 bfg-1.14.0.jar
 test_analytics.db
+notebooks
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
