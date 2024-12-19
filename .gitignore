@@ -154,7 +154,6 @@ cython_debug/
 Data
 bfg-1.14.0.jar
 test_analytics.db
-notebooks
 my_database.duckdb
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
