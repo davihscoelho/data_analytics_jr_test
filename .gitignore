@@ -155,6 +155,11 @@ Data
 bfg-1.14.0.jar
 test_analytics.db
 my_database.duckdb
+bi/dashboard_escola.Report/.pbi/localSettings.json
+bi/dashboard_escola.SemanticModel/.pbi/localSettings.json
+bi/dashboard_escola.SemanticModel/.pbi/cashe.abf
+
+app
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore

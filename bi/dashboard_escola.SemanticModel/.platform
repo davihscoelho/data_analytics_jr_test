@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "dashboard_escola"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "656724d8-900e-4901-b1d8-0610b15e4d26"
+  }
+}
